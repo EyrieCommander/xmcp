@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "x-reader": {
+      "command": "./codex/run-mcp.sh",
+      "args": [],
+      "cwd": "."
+    }
+  }
+}

@@ -5,9 +5,29 @@ FastMCP. Streaming and webhook endpoints are excluded.
 
 ## Prerequisites
 
-- Python 3.9+
+- Python 3.10+ for direct `pip` installs, or `uv` for automatic Python 3.12 environment creation
 - An X Developer Platform app (to get tokens)
 - Optional: an xAI API key if you want to run the Grok test client
+
+## Codex plugin
+
+This fork can be used directly as a Codex plugin. The plugin files live in:
+
+- `.codex-plugin/plugin.json`
+- `.mcp.json`
+- `codex/run-mcp.sh`
+- `skills/x-reader/SKILL.md`
+
+For local use:
+
+1. Create `.env` from `env.example`.
+2. Set `X_BEARER_TOKEN`.
+3. Keep `X_AUTH_MODE=bearer` for read-only post/profile lookups without an OAuth browser flow.
+4. Keep the default `X_API_TOOL_ALLOWLIST` for read-only Codex use unless you intentionally need more tools.
+
+The plugin launcher creates `.venv` on first run. If `uv` is installed, it uses
+Python 3.12 automatically. Otherwise it looks for Python 3.10+. You can override
+with `XMCP_PYTHON=/path/to/python` or `XMCP_VENV=/path/to/venv`.
 
 ## Setup (local)
 
@@ -21,6 +41,7 @@ FastMCP. Streaming and webhook endpoints are excluded.
      - `X_OAUTH_CONSUMER_KEY`
      - `X_OAUTH_CONSUMER_SECRET`
      - `X_BEARER_TOKEN` (required for this setup; keep it set even if using OAuth1)
+     - `X_AUTH_MODE` (`bearer` for read-only bearer-token mode, `oauth1` for browser OAuth1)
    - OAuth1 callback (defaults are fine):
      - `X_OAUTH_CALLBACK_HOST` (default `127.0.0.1`)
      - `X_OAUTH_CALLBACK_PORT` (default `8976`)
@@ -84,10 +105,13 @@ allowlist.
 
 ## OAuth1 flow (startup behavior)
 
-On startup, the server opens a browser for OAuth1 consent and waits for the
+When `X_AUTH_MODE=oauth1`, the server opens a browser for OAuth1 consent and waits for the
 callback. Tokens are kept in memory only for the lifetime of the server
 process. Set `X_OAUTH_PRINT_TOKENS=1` to print tokens, or
 `X_OAUTH_PRINT_AUTH_HEADER=1` to print request headers.
+
+When `X_AUTH_MODE=bearer`, the server uses `X_BEARER_TOKEN` directly and does
+not launch the OAuth browser flow.
 
 ## Available tool calls (allowlist-ready)
 

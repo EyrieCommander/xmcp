@@ -1,0 +1,31 @@
+{
+  "name": "x-reader",
+  "version": "0.1.0",
+  "description": "Read public X posts and users through a local X API MCP server.",
+  "author": {
+    "name": "EyrieCommander",
+    "url": "https://github.com/EyrieCommander"
+  },
+  "homepage": "https://github.com/EyrieCommander/xmcp",
+  "repository": "https://github.com/EyrieCommander/xmcp",
+  "license": "UNLICENSED",
+  "keywords": ["x", "twitter", "mcp", "social"],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "X Reader",
+    "shortDescription": "Read X posts and profiles through the X API.",
+    "longDescription": "X Reader exposes a small, read-only X API toolset to Codex through a local MCP server. It is intended for source-backed reading of posts, quoted posts, users, recent search, and API usage without scraping browser pages.",
+    "developerName": "EyrieCommander",
+    "category": "Productivity",
+    "capabilities": ["Read"],
+    "websiteURL": "https://github.com/EyrieCommander/xmcp",
+    "defaultPrompt": [
+      "Read this X post and summarize it.",
+      "Pull the quoted post too.",
+      "Search recent X posts for this term."
+    ],
+    "brandColor": "#111111",
+    "screenshots": []
+  }
+}
