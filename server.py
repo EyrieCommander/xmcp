@@ -311,7 +311,7 @@ def build_oauth1_client() -> OAuth1Client:
     if is_truthy(os.getenv("X_OAUTH_PRINT_TOKENS", "0")):
         print("OAuth1 access token:", access_token)
         print("OAuth1 access token secret:", access_secret)
-    LOGGER.info("OAuth1 access token: %s", access_token)
+    LOGGER.info("OAuth1 access token acquired.")
     return OAuth1Client(
         client_key=consumer_key,
         client_secret=consumer_secret,
@@ -345,9 +345,13 @@ def create_mcp() -> FastMCP:
     base_url = os.getenv("X_API_BASE_URL", "https://api.x.com")
     timeout = float(os.getenv("X_API_TIMEOUT", "30"))
 
-    oauth1_client = build_oauth1_client()
+    auth_mode = os.getenv("X_AUTH_MODE", "oauth1").strip().lower()
+    if auth_mode not in {"oauth1", "bearer"}:
+        raise RuntimeError("X_AUTH_MODE must be either 'oauth1' or 'bearer'.")
+
+    oauth1_client = None if auth_mode == "bearer" else build_oauth1_client()
     print_oauth_header = is_truthy(os.getenv("X_OAUTH_PRINT_AUTH_HEADER", "0"))
-    if print_oauth_header:
+    if print_oauth_header and oauth1_client:
         print_oauth1_header_probe(oauth1_client, base_url)
 
     spec = load_openapi_spec()
@@ -390,6 +394,9 @@ def create_mcp() -> FastMCP:
 
     async def sign_oauth1_request(request: httpx.Request) -> None:
         request.headers["X-B3-Flags"] = b3_flags
+        if oauth1_client is None:
+            request.headers.update(get_auth_headers())
+            return
         headers = dict(request.headers)
         content_type = headers.get("Content-Type", "")
         body: str | None = None
