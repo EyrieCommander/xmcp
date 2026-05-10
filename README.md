@@ -1,7 +1,17 @@
-# X API FastMCP Server
+# X Reader Codex Plugin
 
-Run a local MCP server that exposes the X API OpenAPI spec as tools using
-FastMCP. Streaming and webhook endpoints are excluded.
+X Reader is an EyrieCommander Codex plugin fork of `xdevplatform/xmcp`. It runs
+a local FastMCP server that exposes a small, read-oriented X API toolset to
+Codex, so agents can read posts, quoted posts, users, recent search results,
+and API usage without scraping X in a browser.
+
+This fork keeps the upstream X API MCP server intact while adding:
+
+- Codex plugin metadata
+- a source-portable plugin launcher
+- a default read-only tool allowlist
+- bearer-token mode for read-only local use
+- safer token logging defaults
 
 ## Prerequisites
 
@@ -9,7 +19,7 @@ FastMCP. Streaming and webhook endpoints are excluded.
 - An X Developer Platform app (to get tokens)
 - Optional: an xAI API key if you want to run the Grok test client
 
-## Codex plugin
+## Codex plugin files
 
 This fork can be used directly as a Codex plugin. The plugin files live in:
 
@@ -28,6 +38,50 @@ For local use:
 The plugin launcher creates `.venv` on first run. If `uv` is installed, it uses
 Python 3.12 automatically. Otherwise it looks for Python 3.10+. You can override
 with `XMCP_PYTHON=/path/to/python` or `XMCP_VENV=/path/to/venv`.
+
+## Testing
+
+### 1. Direct launcher smoke test
+
+From the repo root:
+
+```
+./codex/run-mcp.sh
+```
+
+With an existing local venv:
+
+```
+XMCP_VENV=.venv312 ./codex/run-mcp.sh
+```
+
+Expected result: FastMCP starts at `http://127.0.0.1:8000/mcp` and lists the
+allowlisted read tools.
+
+### 2. MCP client smoke test
+
+In another terminal while the server is running:
+
+```
+.venv312/bin/python -c 'import asyncio
+from fastmcp import Client
+async def main():
+    async with Client("http://127.0.0.1:8000/mcp") as client:
+        tools = await client.list_tools()
+        print([tool.name for tool in tools])
+asyncio.run(main())'
+```
+
+Expected result:
+
+```
+['getOpenApiSpec', 'getPostsByIds', 'searchPostsRecent', 'getPostsById', 'getPostsQuotedPosts', 'getUsage', 'getUsersByIds', 'getUsersByUsernames', 'getUsersByUsername', 'getUsersById', 'getUsersPosts']
+```
+
+### 3. Post lookup smoke test
+
+Call `getPostsById` through the MCP client with a public post id. For quoted
+posts, fetch the referenced quoted id as a second call.
 
 ## Setup (local)
 
